@@ -4,6 +4,5 @@ node_modules
 /src/agents.ts
 /src/email.ts
 /src/gaurdialsAgents.ts
-/src/groq.ts
 /src/mcp.ts
 /src/rag.ts
