@@ -125,35 +125,35 @@ app.get('/events', (req, res) => {
 
 // for SSE react Native
 
-// app.get("/react-native",(req,res)=>{
-//   console.log(req);
+app.get("/react-native-sse",(req,res)=>{
+  console.log(req);
   
-//   // required for SSE headers
-//   res.setHeader('Content-Type', 'text/event-stream');
-//   res.setHeader('Cache-Control', 'no-cache');
-//   res.setHeader('Connection', 'keep-alive');
-//   // optional Cors
-//   res.setHeader('Access-Control-Allow-Origin', "*");
+  // required for SSE headers
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  // optional Cors
+  res.setHeader('Access-Control-Allow-Origin', "*");
 
-//   res.write("connected \n\n")
+  res.write("connected \n\n")
 
   
-//   let count = 0
-//   const internal = setInterval(()=>{
-//     res.write("id: messages1 \n\n")
-//     res.write("event: messages \n\n");
-//     res.write(`data: hello World ${count} \n\n`)
-//     count ++
+  let count = 0
+  const internal = setInterval(()=>{
+    res.write("id: messages1 \n\n")
+    res.write("event: messages \n\n");
+    res.write(`data: hello World ${count} \n\n`)
+    count ++
     
-//     if (count > 10) {
-//       console.log("clearing Interloop");
-//       res.write("data: DONE \n\n");
+    if (count > 10) {
+      console.log("clearing Interloop");
+      res.write("data: DONE \n\n");
 
-//       clearInterval(internal)
-//     }
-//   },1000)
+      clearInterval(internal)
+    }
+  },1000)
 
-// })
+})
 
 
 
