@@ -16,6 +16,11 @@ app.all("/api/auth/*slate", toNodeHandler(auth));
 
 app.use(express.json());
 
+// checking
+app.get("/health-check",(req,res)=>{
+  res.status(200).json({status:200,message:"Successfully running backend"})
+})
+
 
 app.get("/api/me", async (req, res) => {
   console.log('Request:-- ', req.headers, '\n', fromNodeHeaders(req.headers));
