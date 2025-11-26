@@ -6,6 +6,8 @@ import { auth } from './auth.js';
 import "dotenv/config";
 
 const port = process.env.PORT || 3000;
+console.log(port);
+
 
 app.use(cors({
   origin: "*",
@@ -158,7 +160,7 @@ app.get('/events', (req, res) => {
 app.get("/react-native", (req, res) => {
   res.setHeader("Content-Type", "text/plain");
   res.setHeader("Transfer-Encoding", "chunked");
-  console.log("req ", req);
+  console.log("req ", req.headers);
   
   let count = 0;
   const interval = setInterval(() => {
@@ -172,6 +174,6 @@ app.get("/react-native", (req, res) => {
   }, 1000);
 });
 
-app.listen(port as number, "0.0.0.0", () => {
+app.listen(port, () => {
   console.log("Server running on:", port);
 });
