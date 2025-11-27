@@ -10,12 +10,7 @@ export const groq = new ChatGroq({
     apiKey: apiKeyGroq,
 })
 
-const AGENT_PROMPT = `
-    you are expert in the tools selection for getting best output by using them
-`
-
 export const calendarAgent:ReturnType<typeof createAgent> = createAgent({
   model: groq,
-  systemPrompt: AGENT_PROMPT,
   tools: [],
 })

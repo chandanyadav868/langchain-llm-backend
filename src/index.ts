@@ -5,6 +5,7 @@ import { toNodeHandler, fromNodeHeaders } from "better-auth/node";
 import { auth } from './auth.js';
 import "dotenv/config";
 import { calendarAgent } from './groq.js';
+import type { AIMessage } from 'langchain';
 
 const port = process.env.PORT || 3000;
 console.log(port);
@@ -125,12 +126,15 @@ app.get('/events', (req, res) => {
 
 
 const seeRequiredHeaders = (res: Response) => {
-  // required for SSE headers
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-  // optional Cors
-  res.setHeader('Access-Control-Allow-Origin', "*");
+  // // required for SSE headers
+  // res.setHeader('Content-Type', 'text/event-stream');
+  // res.setHeader('Cache-Control', 'no-cache');
+  // res.setHeader('Connection', 'keep-alive');
+  // // optional Cors
+  // res.setHeader('Access-Control-Allow-Origin', "*");
+
+   res.setHeader("Content-Type", "text/plain");
+  res.setHeader("Transfer-Encoding", "chunked");
 
   return res
 }
@@ -138,33 +142,38 @@ const seeRequiredHeaders = (res: Response) => {
 // for SSE react Native
 
 app.post("/react-native-sse", async (req, res) => {
-  const data = req.body as BodyData;
-
-  if (!data) {
-    throw new Error("Provide required Data")
+  try {
+    const data = req.body as BodyData;
+  
+    if (!data) {
+      throw new Error("Provide required Data")
+    }
+  
+    const { messages, model, stream } = data;
+  
+    // llm calling 
+  
+    // adding required Header
+    seeRequiredHeaders(res)
+  
+    res.write("event: messages\n");
+  
+    const streamData = await calendarAgent.stream(
+      { messages: [{ role: messages[0]?.role as string, content: messages?.[0]?.content as string }] },
+      { streamMode: "messages" }
+    );
+  
+    for await (const element of streamData) {
+      const newObject = { message: element[0].content };
+      res.write(`data: ${JSON.stringify(newObject)}\n`)
+    }
+  
+    // res.write("data: [DONE]\n");
+    res.end();
+  } catch (error) {
+    console.log("ERROR ", error);
+    res.end();
   }
-
-  const { messages, model, stream } = data;
-
-  // llm calling 
-
-  // adding required Header
-  seeRequiredHeaders(res)
-
-  res.write("event: messages \n\n");
-
-  const streamData = await calendarAgent.stream({
-    messages: [{ role: messages[0]?.role as string, content: messages[0]?.content as string }]
-  });
-
-  for await (const element of streamData) {
-    // console.log(`BackendData `, element);
-    const newObject = { message: element };
-    res.write(`data: ${JSON.stringify(newObject)}\n`)
-  }
-
-  res.write("data: {end: DONE} \n\n");
-  res.end()
 
 })
 
