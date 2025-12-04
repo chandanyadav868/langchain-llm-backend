@@ -6,5 +6,6 @@ interface MessageInterFace{
 interface BodyData {
   messages:MessageInterFace[],
   stream:boolean;
-  model:string
+  model:string;
+  type:"Gemina" | "Groq"
 }

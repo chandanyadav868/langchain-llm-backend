@@ -4,8 +4,8 @@ const app = express();
 import { toNodeHandler, fromNodeHeaders } from "better-auth/node";
 import { auth } from './auth.js';
 import "dotenv/config";
-import { calendarAgent } from './groq.js';
-import type { AIMessage } from 'langchain';
+import userRouter from './routes/user.route.js';
+import llmRouter from './routes/llm.route.js';
 
 const port = process.env.PORT || 3000;
 console.log(port);
@@ -25,17 +25,8 @@ app.get("/health-check", (req, res) => {
   res.status(200).json({ status: 200, message: "Successfully running backend" })
 })
 
-
-app.get("/api/me", async (req, res) => {
-  console.log('Request:-- ', req.headers, '\n', fromNodeHeaders(req.headers));
-
-  const session = await auth.api.getSession({
-    headers: fromNodeHeaders(req.headers),
-  });
-  console.log(`sessionL-- `, session);
-
-  return res.json(session);
-});
+app.use("/api",userRouter)
+app.use("/llm",llmRouter)
 
 
 const map = new Map()
@@ -121,59 +112,6 @@ app.get('/events', (req, res) => {
     console.log(`❌ Client disconnected`);
     clearInterval(interval)
   })
-
-})
-
-
-const seeRequiredHeaders = (res: Response) => {
-  // // required for SSE headers
-  // res.setHeader('Content-Type', 'text/event-stream');
-  // res.setHeader('Cache-Control', 'no-cache');
-  // res.setHeader('Connection', 'keep-alive');
-  // // optional Cors
-  // res.setHeader('Access-Control-Allow-Origin', "*");
-
-   res.setHeader("Content-Type", "text/plain");
-  res.setHeader("Transfer-Encoding", "chunked");
-
-  return res
-}
-
-// for SSE react Native
-
-app.post("/react-native-sse", async (req, res) => {
-  try {
-    const data = req.body as BodyData;
-  
-    if (!data) {
-      throw new Error("Provide required Data")
-    }
-  
-    const { messages, model, stream } = data;
-  
-    // llm calling 
-  
-    // adding required Header
-    seeRequiredHeaders(res)
-  
-    res.write("event: messages\n");
-  
-    const streamData = await calendarAgent.stream(
-      { messages: [{ role: messages[0]?.role as string, content: messages?.[0]?.content as string }] },
-      { streamMode: "messages" }
-    );
-  
-    for await (const element of streamData) {
-      const newObject = { message: element[0].content };
-      res.write(`data: ${JSON.stringify(newObject)}\n`)
-    }
-  
-    // res.write("data: [DONE]\n");
-    res.end();
-  } catch (error) {
-    console.log("ERROR ", error);
-    res.end();
-  }
 
 })
 
