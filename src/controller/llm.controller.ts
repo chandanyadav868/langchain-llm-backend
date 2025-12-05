@@ -34,9 +34,10 @@ const llmResponse = async (req: Request, res: Response, next: NextFunction) => {
         // res.write("data: [DONE]\n");
         res.end();
     } catch (error) {
-        console.log("ERROR ", error);
-        res.end();
-    }
+        console.log("ERROR ", (error as any).message);
+        res.write(`data: ${JSON.stringify({status: 500, message: (error as any).message,})}\n\n`);
+        res.end()
+    }   
 }
 
 export { llmResponse }
