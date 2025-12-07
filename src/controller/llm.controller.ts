@@ -23,7 +23,7 @@ const llmResponse = async (req: Request, res: Response, next: NextFunction) => {
 
         const streamData = await searchAgent.stream(
             { messages: [{ role: messages[0]?.role as string, content: messages?.[0]?.content as string }] },
-            { streamMode: "messages" }
+            { streamMode: "messages"}
         )
 
         for await (const element of streamData) {
@@ -34,7 +34,7 @@ const llmResponse = async (req: Request, res: Response, next: NextFunction) => {
         // res.write("data: [DONE]\n");
         res.end();
     } catch (error) {
-        console.log("ERROR ", (error as any).message);
+        console.log("ERROR:- ", (error as any).message);
         res.write(`data: ${JSON.stringify({status: 500, message: (error as any).message,})}\n\n`);
         res.end()
     }   
