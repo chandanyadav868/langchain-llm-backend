@@ -6,17 +6,12 @@ import { Groq } from "groq-sdk";
 
 const apiKeyGroq = process.env.GROQ_API_KEY!;
 const apiKeyGemini = process.env.GEMINA_API_KEY!;
-import { asterikLongText } from "./utils/utils.js"
 import { Command } from "@langchain/langgraph";
-
-
-// console.log(`apiKeyGroq:-- `, asterikLongText(apiKeyGroq), '\n', `apiKeyGemini:-- `, asterikLongText(apiKeyGemini));
-
-
+import fs from "fs"
 
 export const geminiAI = new ChatGoogleGenerativeAI({
   apiKey: apiKeyGemini,
-  model: "gemini-2.5-flash",
+  model: "gemini-2.5-flash-lite",
   maxOutputTokens: 2000,
 });
 
@@ -57,14 +52,14 @@ const dynamicSelecitionModel = createMiddleware({
     dynamicSelecitionModelRun++
     console.log(`Run How many Times dynamicSelecitionModel:- `, dynamicSelecitionModelRun);
 
-    let model = messageCount > 10 ? groq : geminiAI;
+    let model = messageCount > 10 ?  groq : geminiAI;
 
 
     // console.log(model.model);
 
     let tools: any[] = [...request.tools]
 
-    if (model.model.includes("gemini")) {
+    if (model.model.includes("gemini")) {      
       tools = [{ urlContext: {} }, { googleSearch: {} }, { codeExecution: {} }, ...tools]
     }
 
@@ -183,77 +178,87 @@ const groqLiveData = new Groq({
   }
 });
 
-let changeLLMModelRun = 0;
+let latestNewSearchingToolsRun = 0;
 export const latestNewSearchingTools = tool(
-  async ({ model_name }, runtime) => {
-    // console.log(`Changed Model Name:-- `, model_name);
-    changeLLMModelRun++
+  async ({ query }, runtime) => {
+    console.log(`Changed Model Name:-- `, query);
+    latestNewSearchingToolsRun++
     const chatCompletion = await groqLiveData.chat.completions.create({
       messages: [
         {
           role: "user",
-          content: "latest news about the india and south africa match",
+          content: `${query}`,
         },
       ],
       model: "groq/compound",
     });
 
     const message = chatCompletion?.choices?.[0]?.message;
-    console.log(`Run How many Times changeLLMModelRun:- `, changeLLMModelRun);
+    console.log(`Run How many Times latestNewSearchingTools:- `, latestNewSearchingToolsRun);
 
     // Print the final content
-    console.log(`Print the final content:-- ` , message?.content);
-
+    console.log(`Print the final content:-- `, message?.content);
 
     return message?.content
   }, {
   name: "Latest_Online_Searching_Tools",
-  description: "If user want to live or URL content, browser Automation then use this tool",
+  description: "If user want to live or URL content, browser Automation or you have no knowledge about it like , live updates,  then use this tool",
   schema: z.object({
-    model_name: z.string().describe("provide the model_name groq/compund")
+    query: z.string().describe("provide the query which user want to search")
   })
 }
 )
 
-// const summarizationMidd = summarizationMiddleware({
-//   model: groq,
-//   trigger: { tokens: 4000 },
-//   keep: { messages: 3 }
-// })
+let readEmailToolRun = 0;
+const readEmailTool = tool(({emailId}: {emailId:string}): string => {
+  /** Mock function to read an email by its ID. */
+  readEmailToolRun++
+  console.log(`readEmailToolRun:-- `, readEmailToolRun)
+  return `Email content for ID: ${emailId} he is going to delhi tommorrow`;
+},
+  {
+    name: "Email_Reading",
+    description: "Read Email of any email id by calling this readEmailTool tool",
+    schema: z.object({
+      emailId: z.string().describe("Pass the user Email Id which have been passed on the query")
+    })
+  }
+)
 
-// human in the loop
+let youtubeSubtitles = tool(
+  ({videoId})=>{
+    let directory = "ytSubtitles";
+    console.log({videoId});
 
-// const readEmailTool = tool((emailId: string): string => {
-//   /** Mock function to read an email by its ID. */
-//   return `Email content for ID: ${emailId}`;
-// },
-//   {
-//     name: "Email_Reading",
-//     description: "Read Email of any id by calling this tool",
-//     schema: z.object({
-//       emailId: z.string().describe("Email id given by user")
-//     })
-//   }
-// )
-
-
-// const hunmanintervantion = humanInTheLoopMiddleware({
-//   interruptOn: {
-//     readEmailTool: false
-//   }
-// })
+    let text = fs.readFileSync(`${directory}/${videoId}.txt`, "utf8");
+    const portion = text.slice(0)
+    // console.log(`youtubeSubtitles:-- `, portion);
+    return portion
+  },
+  {
+    name:"youtube_subtitles_extractor",
+    description:"If you want to extract subtiles of any youtube video then pass the id of that youtube video for example https://www.youtube.com/watch?v=n-Hw_K_GsOg, videoId=n-Hw_K_GsOg",
+    schema:z.object({
+      videoId:z.string().describe("pass youtube videoId=n-Hw_K_GsOg")
+    })
+  }
+)
 
 export const searchAgent: ReturnType<typeof createAgent> = createAgent({
   model: geminiAI,
   middleware: [dynamicSystemPrompt, dynamicSelecitionModel],
-  tools: [checkAuthentication, authenticateUser, latestNewSearchingTools]
+  tools: [checkAuthentication, authenticateUser, latestNewSearchingTools, readEmailTool,youtubeSubtitles]
 })
 
 let run = 0
 const runAgent = async () => {
   const data = await searchAgent.invoke(
     {
-      messages: [{ role: "user", content: "Check if user of which id is sdkfjhgewirj22394u5 is authenticated by using the tools given to you and give answer in short oneline, before checkAuthentication run authenticateUser tools, password is 1234,  and I want live update of india vs South africa Match and winning percentage of each country , use the tool Change_Model_name and give name groq/compound of model" }]
+      messages: [{ role: "user", content: `
+        https://www.youtube.com/watch?v=n-Hw_K_GsOg extract the subtitles using my own tools
+        
+        Please give me summary of this subtitles which a new people can understand this
+        ` }]
     },
     {
       context: { userRole: "beginner", password: "currect" }
@@ -262,8 +267,11 @@ const runAgent = async () => {
   )
   run++
   console.log(`Run How many Times AsynItratorRUn:- `, run);
+  console.log(data);
+
 }
-// runAgent();
+
+runAgent();
 
 // import fs from "fs";
 
@@ -282,3 +290,5 @@ const runAgent = async () => {
 
 // console.log(`Content Data:-- ` ,content);
 // }
+
+

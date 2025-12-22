@@ -42,6 +42,6 @@
     "moduleDetection": "force",
     "skipLibCheck": true,
   },
-  "include": ["src/**/*.ts", "src/agents.ts","types.d.ts"],
+  "include": ["src/**/*.ts", "src/agents.ts","types.d.ts", "src/ytsubtitles.ts"],
   "exclude": ["node_modules"]
 }
