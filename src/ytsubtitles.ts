@@ -17,9 +17,12 @@ export const twitterVideoUrl = async (url:string) => {
     }, {
         cwd: directory,
     });
-    // console.log(`Title #----> <-----#`, ytdlUrl);
-    const arrayFiles = fs.readdirSync(directory, { encoding: "utf-8" });
+    console.log(`Title #----> <-----#`, ytdlUrl);
 
+    
+    const arrayFiles = fs.readdirSync(directory, { encoding: "utf-8" });
+    console.log(`ArrayFilesSubtitle:-- `,arrayFiles);
+    
     let ytid = url.match(/(?:v=)([^&]+)/)?.[1];
 
     if (!ytid) return;
