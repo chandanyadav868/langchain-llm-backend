@@ -6,3 +6,4 @@ node_modules
 /src/gaurdialsAgents.ts
 /src/mcp.ts
 /src/rag.ts
+/src/langgraph.ts
