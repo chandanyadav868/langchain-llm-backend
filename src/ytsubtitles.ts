@@ -3,8 +3,11 @@ import ytdl from "youtube-dl-exec"
 import path from "path";
 const url = "https://www.youtube.com/watch?v=eIoohUmYpGI";
 let directory = path.join(process.cwd(), "ytSubtitles");
+let ytcookies = path.join(process.cwd(), "ytcookies.txt");
 
 // console.log(process.cwd(),path.relative("ytsubtitles.js","ytSubtitles"),process.execPath,path.resolve("craLinkHakathon","backend","src","ytsubtitles"));
+
+let text = fs.readFileSync(ytcookies, "utf8");
 
 export const twitterVideoUrl = async (url:string) => {
    try {
@@ -14,6 +17,7 @@ export const twitterVideoUrl = async (url:string) => {
          skipDownload: true,
          // dumpJson:true
          writeAutoSub: true,
+         cookies:ytcookies
          // dumpSingleJson:true
      }, {
          cwd: directory,
