@@ -1,49 +1,54 @@
 import fs from "fs";
 import ytdl from "youtube-dl-exec"
 import path from "path";
-const url = "https://www.youtube.com/watch?v=n-Hw_K_GsOg";
+const url = "https://www.youtube.com/watch?v=eIoohUmYpGI";
 let directory = path.join(process.cwd(), "ytSubtitles");
 
 // console.log(process.cwd(),path.relative("ytsubtitles.js","ytSubtitles"),process.execPath,path.resolve("craLinkHakathon","backend","src","ytsubtitles"));
 
 export const twitterVideoUrl = async (url:string) => {
-    console.log(`twitterVideoUrl:-- `,{url});
-    
-    const ytdlUrl = await ytdl.exec(url, {
-        skipDownload: true,
-        // dumpJson:true
-        writeAutoSub: true,
-        // dumpSingleJson:true
-    }, {
-        cwd: directory,
-    });
-    console.log(`Title #----> <-----#`, ytdlUrl);
-
-    
-    const arrayFiles = fs.readdirSync(directory, { encoding: "utf-8" });
-    console.log(`ArrayFilesSubtitle:-- `,arrayFiles);
-    
-    let ytid = url.match(/(?:v=)([^&]+)/)?.[1];
-
-    if (!ytid) return;
-
-    const filesExtractedCleanUp = arrayFiles.find((v, i) => v.includes(ytid));
-
-    if (!filesExtractedCleanUp) {
-        console.log("File not found");
-        return;
-    }
-
-    const cleanData = cleanTranscript(`${directory}/${filesExtractedCleanUp}`);
-
-    // let title = ytdlUrl?.title.replace(/\, /g, "_").replace(/[ ]/g, "_").replace(/_\|_/g, "_");
-    fileSaving(`${directory}/${ytid}`, cleanData, `${directory}/${filesExtractedCleanUp}`);
-
-    return cleanData
+   try {
+     console.log(`twitterVideoUrl:-- `,{url});
+     
+     const ytdlUrl = await ytdl.exec(url, {
+         skipDownload: true,
+         // dumpJson:true
+         writeAutoSub: true,
+         // dumpSingleJson:true
+     }, {
+         cwd: directory,
+     });
+     console.log(`Title #----> <-----#`, ytdlUrl);
+ 
+ 
+     const arrayFiles = fs.readdirSync(directory, { encoding: "utf-8" });
+     console.log(`ArrayFilesSubtitle:-- `,arrayFiles);
+     
+     let ytid = url.match(/(?:v=)([^&]+)/)?.[1];
+ 
+     if (!ytid) return;
+ 
+     const filesExtractedCleanUp = arrayFiles.find((v, i) => v.includes(ytid));
+ 
+     if (!filesExtractedCleanUp) {
+         console.log("File not found");
+         return;
+     }
+ 
+     const cleanData = cleanTranscript(`${directory}/${filesExtractedCleanUp}`);
+ 
+     // let title = ytdlUrl?.title.replace(/\, /g, "_").replace(/[ ]/g, "_").replace(/_\|_/g, "_");
+     fileSaving(`${directory}/${ytid}`, cleanData, `${directory}/${filesExtractedCleanUp}`);
+ 
+     return cleanData
+   } catch (error) {
+    console.log(`Error in TwitterVideoUrl:-- `, error);
+    return JSON.stringify(error)
+   }
 
 }
 
-// await twitterVideoUrl(url);
+await twitterVideoUrl(url);
 
 
 // cleanTranscript
