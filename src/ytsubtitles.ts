@@ -48,7 +48,7 @@ export const twitterVideoUrl = async (url:string) => {
 
 }
 
-await twitterVideoUrl(url);
+// await twitterVideoUrl(url);
 
 
 // cleanTranscript
